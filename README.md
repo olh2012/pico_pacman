@@ -38,6 +38,8 @@ pico_pacman/
 │   │   ├── GameSystem/
 │   │   ├── UI/
 │   │   └── Utils/
+│   ├── Tests/
+│   │   └── EditMode/
 │   ├── Prefabs/
 │   ├── Materials/
 │   ├── Models/
@@ -51,7 +53,10 @@ pico_pacman/
 │   ├── technical_spec.md
 │   ├── setup_guide.md
 │   ├── project_structure.md
-│   └── development_roadmap.md
+│   ├── development_roadmap.md
+│   ├── testing_plan.md
+│   ├── testing_guidelines.md
+│   └── user_guide.md
 └── README.md
 ```
 
@@ -83,8 +88,18 @@ pico_pacman/
 - [x] ScoreManager (分数管理)
 - [x] VRMenu (VR菜单系统)
 - [x] HUDController (抬头显示)
+- [x] AudioManager (音频管理)
+- [x] GameController (游戏协调)
 - [x] Singleton pattern (单例模式)
 - [x] Utility extensions (工具扩展)
+
+### 测试系统
+- [x] Unit test framework (Unity Test Framework)
+- [x] Core system unit tests
+- [x] AI system unit tests
+- [x] Player system unit tests
+- [x] Utility unit tests
+- [x] Test documentation and guidelines
 
 ### 文档
 - [x] 设计文档
@@ -93,12 +108,14 @@ pico_pacman/
 - [x] 项目结构说明
 - [x] 开发路线图
 - [x] 测试计划
+- [x] 测试指南
 - [x] 用户指南
 
 ## 开发进度
 - [x] 项目初始化和文档
 - [x] 核心系统架构
 - [x] 完整鬼魂AI系统
+- [x] 单元测试框架
 - [ ] 迷宫设计与实现
 - [ ] 游戏机制实现
 - [ ] VR控制集成
@@ -115,6 +132,23 @@ pico_pacman/
 3. 选择Android平台并切换
 4. 配置Player Settings (参考技术规范文档)
 5. 点击Build And Run
+
+## 运行单元测试
+
+### 在Unity编辑器中运行
+1. 打开Unity编辑器并加载项目
+2. 打开Test Runner窗口 (`Window > General > Test Runner`)
+3. 选择"EditMode"标签
+4. 点击"Run All"按钮运行所有测试
+
+### 命令行运行测试
+```bash
+# 运行所有编辑模式测试
+unity-editor -runTests -testPlatform editmode -projectPath /path/to/pico_pacman
+
+# 运行所有播放模式测试
+unity-editor -runTests -testPlatform playmode -projectPath /path/to/pico_pacman
+```
 
 ## 贡献指南
 

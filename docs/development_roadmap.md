@@ -87,6 +87,10 @@
 ## Phase 6: Testing and Release (Weeks 11-12)
 
 ### Week 11: Testing
+- [x] Create unit test framework
+- [x] Implement core system unit tests
+- [x] Implement AI system unit tests
+- [x] Implement utility unit tests
 - [ ] Conduct internal playtesting
 - [ ] Fix critical bugs
 - [ ] Test on PICO 3 and PICO 4

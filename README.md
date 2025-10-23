@@ -90,6 +90,8 @@ pico_pacman/
 - [x] HUDController (抬头显示)
 - [x] AudioManager (音频管理)
 - [x] GameController (游戏协调)
+- [x] LevelManager (关卡管理)
+- [x] VisualEffectsManager (视觉效果管理)
 - [x] Singleton pattern (单例模式)
 - [x] Utility extensions (工具扩展)
 
@@ -116,8 +118,8 @@ pico_pacman/
 - [x] 核心系统架构
 - [x] 完整鬼魂AI系统
 - [x] 单元测试框架
-- [ ] 迷宫设计与实现
-- [ ] 游戏机制实现
+- [x] 迷宫设计与实现
+- [x] 游戏机制实现
 - [ ] VR控制集成
 - [ ] UI/UX设计
 - [ ] 音效集成

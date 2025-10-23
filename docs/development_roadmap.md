@@ -24,10 +24,10 @@
 
 ### Week 3: Maze and Pellet System
 - [x] Create maze generator
-- [ ] Implement maze layout system
-- [ ] Create pellet collection system
-- [ ] Implement power pellet mechanics
-- [ ] Add collision detection
+- [x] Implement maze layout system
+- [x] Create pellet collection system
+- [x] Implement power pellet mechanics
+- [x] Add collision detection
 
 ### Week 4: AI and Game Logic
 - [x] Implement Pinky ghost (ambusher)
@@ -73,7 +73,7 @@
 ### Week 9: Game Polish
 - [x] Implement score system
 - [x] Add high score tracking
-- [ ] Create level progression
+- [x] Create level progression
 - [ ] Add visual feedback for game events
 - [ ] Implement game over and restart flow
 

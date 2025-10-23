@@ -18,7 +18,7 @@ namespace PacMan.GameSystem
         [SerializeField] private GameObject smallPelletPrefab;
         [SerializeField] private GameObject powerPelletPrefab;
         
-        private List<GameObject> _pellets = new List<GameObject>();
+        private List<Pellet> _pellets = new List<Pellet>();
         private int _totalPellets = 0;
         private int _collectedPellets = 0;
         private GameManager _gameManager;
@@ -61,8 +61,13 @@ namespace PacMan.GameSystem
             {
                 foreach (Vector3 position in pelletPositions)
                 {
-                    GameObject pellet = Instantiate(smallPelletPrefab, position, Quaternion.identity, transform);
-                    pellet.tag = "Pellet";
+                    GameObject pelletObject = Instantiate(smallPelletPrefab, position, Quaternion.identity, transform);
+                    Pellet pellet = pelletObject.GetComponent<Pellet>();
+                    if (pellet == null)
+                    {
+                        pellet = pelletObject.AddComponent<Pellet>();
+                    }
+                    pelletObject.tag = "Pellet";
                     _pellets.Add(pellet);
                     _totalPellets++;
                 }
@@ -73,8 +78,15 @@ namespace PacMan.GameSystem
             {
                 foreach (Vector3 position in powerPelletPositions)
                 {
-                    GameObject powerPellet = Instantiate(powerPelletPrefab, position, Quaternion.identity, transform);
-                    powerPellet.tag = "PowerPellet";
+                    GameObject powerPelletObject = Instantiate(powerPelletPrefab, position, Quaternion.identity, transform);
+                    Pellet powerPellet = powerPelletObject.GetComponent<Pellet>();
+                    if (powerPellet == null)
+                    {
+                        powerPellet = powerPelletObject.AddComponent<Pellet>();
+                        // Set as power pellet
+                        // In a full implementation, we would configure this properly
+                    }
+                    powerPelletObject.tag = "PowerPellet";
                     _pellets.Add(powerPellet);
                     _totalPellets++;
                 }
@@ -132,6 +144,27 @@ namespace PacMan.GameSystem
         }
         
         /// <summary>
+        /// Handle pellet collection by reference
+        /// </summary>
+        /// <param name="pellet">The collected pellet</param>
+        public void CollectPellet(Pellet pellet)
+        {
+            if (pellet == null) return;
+            
+            if (pellet.IsPowerPellet())
+            {
+                HandlePowerPelletCollected();
+            }
+            else
+            {
+                HandlePelletCollected();
+            }
+            
+            // Remove from list
+            _pellets.Remove(pellet);
+        }
+        
+        /// <summary>
         /// Check if all pellets have been collected
         /// </summary>
         private void CheckLevelComplete()
@@ -180,11 +213,11 @@ namespace PacMan.GameSystem
         public void ResetPellets()
         {
             // Destroy existing pellets
-            foreach (GameObject pellet in _pellets)
+            foreach (Pellet pellet in _pellets)
             {
-                if (pellet != null)
+                if (pellet != null && pellet.gameObject != null)
                 {
-                    Destroy(pellet);
+                    Destroy(pellet.gameObject);
                 }
             }
             

@@ -26,6 +26,8 @@ namespace PacMan.GameSystem
         private int[,] mazeGrid;
         private List<Vector3> pelletPositions = new List<Vector3>();
         private List<Vector3> powerPelletPositions = new List<Vector3>();
+        private Vector3 playerSpawnPosition;
+        private List<Vector3> ghostSpawnPositions = new List<Vector3>();
         
         // Events
         public System.Action OnMazeGenerated;
@@ -80,7 +82,7 @@ namespace PacMan.GameSystem
             
             for (int y = 0; y < lines.Length && y < height; y++)
             {
-                string line = lines[y];
+                string line = lines[y].TrimEnd('\r', '\n');
                 for (int x = 0; x < line.Length && x < width; x++)
                 {
                     char c = line[x];
@@ -99,17 +101,11 @@ namespace PacMan.GameSystem
                             break;
                         case 'P': // Player spawn
                             mazeGrid[x, y] = 4;
-                            if (playerSpawnPoint != null)
-                            {
-                                Instantiate(playerSpawnPoint, new Vector3(x * cellSize, 0, y * cellSize), Quaternion.identity);
-                            }
+                            playerSpawnPosition = new Vector3(x * cellSize, 0, y * cellSize);
                             break;
                         case 'G': // Ghost spawn
                             mazeGrid[x, y] = 5;
-                            if (ghostSpawnPoint != null)
-                            {
-                                Instantiate(ghostSpawnPoint, new Vector3(x * cellSize, 0, y * cellSize), Quaternion.identity);
-                            }
+                            ghostSpawnPositions.Add(new Vector3(x * cellSize, 0, y * cellSize));
                             break;
                         default: // Empty space
                             mazeGrid[x, y] = 0;
@@ -263,6 +259,18 @@ namespace PacMan.GameSystem
         }
         
         /// <summary>
+        /// Check if a position is walkable using Vector3
+        /// </summary>
+        /// <param name="position">World position</param>
+        /// <returns>True if position is walkable</returns>
+        public bool IsWalkable(Vector3 position)
+        {
+            int x = Mathf.RoundToInt(position.x / cellSize);
+            int y = Mathf.RoundToInt(position.z / cellSize);
+            return IsWalkable(x, y);
+        }
+        
+        /// <summary>
         /// Get a random walkable position in the maze
         /// </summary>
         /// <returns>Random walkable position</returns>
@@ -287,6 +295,42 @@ namespace PacMan.GameSystem
             }
             
             return Vector3.zero;
+        }
+        
+        /// <summary>
+        /// Get the player spawn position
+        /// </summary>
+        /// <returns>Player spawn position</returns>
+        public Vector3 GetPlayerSpawnPosition()
+        {
+            return playerSpawnPosition;
+        }
+        
+        /// <summary>
+        /// Get ghost spawn positions
+        /// </summary>
+        /// <returns>List of ghost spawn positions</returns>
+        public List<Vector3> GetGhostSpawnPositions()
+        {
+            return ghostSpawnPositions;
+        }
+        
+        /// <summary>
+        /// Get all pellet positions
+        /// </summary>
+        /// <returns>List of pellet positions</returns>
+        public List<Vector3> GetPelletPositions()
+        {
+            return pelletPositions;
+        }
+        
+        /// <summary>
+        /// Get all power pellet positions
+        /// </summary>
+        /// <returns>List of power pellet positions</returns>
+        public List<Vector3> GetPowerPelletPositions()
+        {
+            return powerPelletPositions;
         }
     }
 }

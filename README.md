@@ -73,10 +73,16 @@ pico_pacman/
 - [x] GameManager (游戏状态管理)
 - [x] PlayerController (玩家控制)
 - [x] Ghost base class (鬼魂基类)
-- [x] Blinky implementation (红色鬼魂)
+- [x] Ghost implementations (四种鬼魂)
+- [x] GhostManager (鬼魂协调管理)
 - [x] MazeGenerator (迷宫生成器)
+- [x] PelletManager (豆子管理)
 - [x] TeleportationController (传送控制)
+- [x] SmoothMovementController (平滑移动)
 - [x] UIManager (用户界面管理)
+- [x] ScoreManager (分数管理)
+- [x] VRMenu (VR菜单系统)
+- [x] HUDController (抬头显示)
 - [x] Singleton pattern (单例模式)
 - [x] Utility extensions (工具扩展)
 
@@ -86,12 +92,14 @@ pico_pacman/
 - [x] 设置指南
 - [x] 项目结构说明
 - [x] 开发路线图
+- [x] 测试计划
+- [x] 用户指南
 
 ## 开发进度
 - [x] 项目初始化和文档
 - [x] 核心系统架构
+- [x] 完整鬼魂AI系统
 - [ ] 迷宫设计与实现
-- [ ] 完整鬼魂AI系统
 - [ ] 游戏机制实现
 - [ ] VR控制集成
 - [ ] UI/UX设计

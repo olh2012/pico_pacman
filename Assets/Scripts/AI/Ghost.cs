@@ -33,6 +33,7 @@ namespace PacMan.AI
         protected float _directionChangeTimer = 0f;
         protected Vector3 _homePosition;
         protected bool _isMoving = true;
+        protected GhostAudioController _ghostAudioController;
         
         // References
         protected Transform playerTransform;
@@ -46,6 +47,7 @@ namespace PacMan.AI
         {
             _rigidbody = GetComponent<Rigidbody>();
             _homePosition = transform.position;
+            _ghostAudioController = GetComponent<GhostAudioController>();
         }
         
         protected virtual void Start()
@@ -190,6 +192,12 @@ namespace PacMan.AI
             {
                 currentState = GhostState.Chase;
                 _isMoving = true;
+                
+                // Play respawn sound
+                if (_ghostAudioController != null)
+                {
+                    _ghostAudioController.PlayRespawnSound();
+                }
             }
         }
         
@@ -231,6 +239,11 @@ namespace PacMan.AI
             if (currentState != GhostState.ReturningHome)
             {
                 currentState = GhostState.Frightened;
+                // Notify audio controller
+                if (_ghostAudioController != null)
+                {
+                    _ghostAudioController.SetFrightened(true);
+                }
                 // Visual change would be handled here (blue color)
             }
         }
@@ -243,6 +256,11 @@ namespace PacMan.AI
             if (currentState == GhostState.Frightened)
             {
                 currentState = GhostState.Recovering;
+                // Notify audio controller
+                if (_ghostAudioController != null)
+                {
+                    _ghostAudioController.SetFrightened(true);
+                }
                 // Visual change would be handled here (flashing)
             }
         }
@@ -255,6 +273,11 @@ namespace PacMan.AI
             currentState = GhostState.ReturningHome;
             _isMoving = true;
             OnGhostEaten?.Invoke();
+            // Notify audio controller
+            if (_ghostAudioController != null)
+            {
+                _ghostAudioController.SetFrightened(false);
+            }
             // Visual change would be handled here (eyes only)
         }
         

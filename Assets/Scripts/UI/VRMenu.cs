@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using PacMan.GameSystem;
+using PacMan.Player;
 
 namespace PacMan.UI
 {
@@ -37,14 +38,36 @@ namespace PacMan.UI
         [SerializeField] private Button restartButton;
         [SerializeField] private Button mainMenuButton;
         
+        [Header("VR Navigation")]
+        [SerializeField] private InputManager inputManager;
+        [SerializeField] private float navigationDelay = 0.3f;
+        [SerializeField] private float triggerThreshold = 0.5f;
+        
         private GameManager _gameManager;
         private ScoreManager _scoreManager;
+        private float _lastNavigationTime = 0f;
+        private int _currentSelectionIndex = 0;
+        private Selectable[] _currentSelectables;
+        private bool _triggerPressed = false;
         
         private void Start()
         {
             // Get references to game systems
             _gameManager = GameManager.Instance;
             _scoreManager = FindObjectOfType<ScoreManager>();
+            
+            // Find InputManager if not assigned
+            if (inputManager == null)
+            {
+                inputManager = FindObjectOfType<InputManager>();
+            }
+            
+            // Subscribe to input events
+            if (inputManager != null)
+            {
+                inputManager.OnRightTriggerPressed += HandleTriggerPressed;
+                inputManager.OnLeftJoystickMoved += HandleJoystickInput;
+            }
             
             // Initialize UI elements
             InitializeUI();
@@ -383,6 +406,115 @@ namespace PacMan.UI
             // In a full implementation, this would communicate with the movement system
         }
         
+        /// <summary>
+        /// Handle trigger pressed input for VR menu navigation
+        /// </summary>
+        /// <param name="pressed">True if trigger is pressed</param>
+        private void HandleTriggerPressed(bool pressed)
+        {
+            _triggerPressed = pressed;
+            
+            // If trigger is pressed and enough time has passed since last navigation
+            if (pressed && Time.time - _lastNavigationTime > navigationDelay)
+            {
+                // Get currently active panel
+                GameObject activePanel = GetActivePanel();
+                if (activePanel != null)
+                {
+                    // Find selectable elements in the active panel
+                    Selectable currentSelection = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject?.GetComponent<Selectable>();
+                    
+                    if (currentSelection != null)
+                    {
+                        // Activate the selected element
+                        currentSelection.onClick?.Invoke();
+                        _lastNavigationTime = Time.time;
+                    }
+                    else
+                    {
+                        // If nothing is selected, select the first available element
+                        Selectable[] selectables = activePanel.GetComponentsInChildren<Selectable>(true);
+                        if (selectables.Length > 0)
+                        {
+                            Selectable firstSelectable = selectables[0];
+                            firstSelectable.Select();
+                            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(firstSelectable.gameObject);
+                        }
+                    }
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Handle joystick input for VR menu navigation
+        /// </summary>
+        /// <param name="joystickInput">Joystick input vector</param>
+        private void HandleJoystickInput(Vector2 joystickInput)
+        {
+            // If enough time has passed since last navigation
+            if (Time.time - _lastNavigationTime > navigationDelay)
+            {
+                // Get currently active panel
+                GameObject activePanel = GetActivePanel();
+                if (activePanel != null)
+                {
+                    // Find selectable elements in the active panel
+                    Selectable[] selectables = activePanel.GetComponentsInChildren<Selectable>(true);
+                    
+                    if (selectables.Length > 0)
+                    {
+                        // Get current selection
+                        Selectable currentSelection = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject?.GetComponent<Selectable>();
+                        
+                        // Find current selection index
+                        int currentIndex = -1;
+                        for (int i = 0; i < selectables.Length; i++)
+                        {
+                            if (selectables[i] == currentSelection)
+                            {
+                                currentIndex = i;
+                                break;
+                            }
+                        }
+                        
+                        // Navigate based on joystick input
+                        if (joystickInput.y > 0.5f)
+                        {
+                            // Move up/previous
+                            int newIndex = currentIndex <= 0 ? selectables.Length - 1 : currentIndex - 1;
+                            Selectable newSelection = selectables[newIndex];
+                            newSelection.Select();
+                            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(newSelection.gameObject);
+                            _lastNavigationTime = Time.time;
+                        }
+                        else if (joystickInput.y < -0.5f)
+                        {
+                            // Move down/next
+                            int newIndex = currentIndex >= selectables.Length - 1 ? 0 : currentIndex + 1;
+                            Selectable newSelection = selectables[newIndex];
+                            newSelection.Select();
+                            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(newSelection.gameObject);
+                            _lastNavigationTime = Time.time;
+                        }
+                    }
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Get the currently active menu panel
+        /// </summary>
+        /// <returns>Active panel GameObject</returns>
+        private GameObject GetActivePanel()
+        {
+            if (mainMenuPanel != null && mainMenuPanel.activeSelf) return mainMenuPanel;
+            if (settingsPanel != null && settingsPanel.activeSelf) return settingsPanel;
+            if (creditsPanel != null && creditsPanel.activeSelf) return creditsPanel;
+            if (pausePanel != null && pausePanel.activeSelf) return pausePanel;
+            if (gameOverPanel != null && gameOverPanel.activeSelf) return gameOverPanel;
+            return null;
+        }
+        
         private void OnDestroy()
         {
             // Unsubscribe from events
@@ -394,6 +526,13 @@ namespace PacMan.UI
             if (_scoreManager != null)
             {
                 _scoreManager.OnHighScoreChanged -= UpdateHighScoreDisplay;
+            }
+            
+            // Unsubscribe from input events
+            if (inputManager != null)
+            {
+                inputManager.OnRightTriggerPressed -= HandleTriggerPressed;
+                inputManager.OnLeftJoystickMoved -= HandleJoystickInput;
             }
         }
     }

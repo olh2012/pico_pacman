@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
+using PacMan.GameSystem;
 
 namespace PacMan.Player
 {
@@ -33,6 +34,7 @@ namespace PacMan.Player
         private Vector3 _playerVelocity;
         private bool _isGrounded;
         private Transform _cameraTransform;
+        private InputManager _inputManager;
         
         // Input actions
         private Vector2 _moveInput;
@@ -53,13 +55,31 @@ namespace PacMan.Player
             _characterController = GetComponent<CharacterController>();
             _cameraTransform = Camera.main.transform;
             
+            // Find InputManager in the scene
+            _inputManager = FindObjectOfType<InputManager>();
+            if (_inputManager != null)
+            {
+                // Subscribe to input events
+                _inputManager.OnLeftJoystickMoved += HandleMoveInput;
+                _inputManager.OnRightJoystickMoved += HandleTurnInput;
+            }
+            
             // Lock cursor for desktop testing (optional)
             Cursor.lockState = CursorLockMode.Locked;
         }
         
+        private void OnDestroy()
+        {
+            // Unsubscribe from input events
+            if (_inputManager != null)
+            {
+                _inputManager.OnLeftJoystickMoved -= HandleMoveInput;
+                _inputManager.OnRightJoystickMoved -= HandleTurnInput;
+            }
+        }
+        
         private void Update()
         {
-            HandleInput();
             HandleMovement();
             HandleRotation();
             HandleInteraction();
@@ -67,18 +87,21 @@ namespace PacMan.Player
         }
         
         /// <summary>
-        /// Handle player input from VR controllers
+        /// Handle player movement input from VR controllers
         /// </summary>
-        private void HandleInput()
+        /// <param name="moveInput">Movement input vector</param>
+        private void HandleMoveInput(Vector2 moveInput)
         {
-            // For VR controllers, we would get input from XRController
-            // For now, we'll use keyboard input for testing
-            
-            // Move input (WASD or Left Stick)
-            _moveInput = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
-            
-            // Turn input (Mouse or Right Stick)
-            _turnInput = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
+            _moveInput = moveInput;
+        }
+        
+        /// <summary>
+        /// Handle player turning input from VR controllers
+        /// </summary>
+        /// <param name="turnInput">Turning input vector</param>
+        private void HandleTurnInput(Vector2 turnInput)
+        {
+            _turnInput = turnInput;
         }
         
         /// <summary>

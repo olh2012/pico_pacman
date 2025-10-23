@@ -30,7 +30,7 @@ namespace PacMan.UI
         private GameManager _gameManager;
         private ScoreManager _scoreManager;
         private GhostManager _ghostManager;
-        private Player.PlayerController _playerController;
+        private PlayerController _playerController;
         
         private void Start()
         {
@@ -38,7 +38,7 @@ namespace PacMan.UI
             _gameManager = GameManager.Instance;
             _scoreManager = FindObjectOfType<ScoreManager>();
             _ghostManager = FindObjectOfType<GhostManager>();
-            _playerController = FindObjectOfType<Player.PlayerController>();
+            _playerController = FindObjectOfType<PlayerController>();
             
             // Subscribe to events
             SubscribeToEvents();

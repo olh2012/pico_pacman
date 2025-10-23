@@ -38,6 +38,12 @@ namespace PacMan.Player
         private bool _isMoving = false;
         private float _currentTunnelVisionIntensity = 0f;
         private Transform _cameraTransform;
+        private InputManager _inputManager;
+        private Vector2 _moveInput = Vector2.zero;
+        private Vector2 _turnInput = Vector2.zero;
+        private bool _snapTurnCooldown = false;
+        private float _snapTurnCooldownTime = 0.2f;
+        private float _snapTurnTimer = 0f;
         
         // Events
         public System.Action<bool> OnTunnelVisionChanged;
@@ -48,12 +54,59 @@ namespace PacMan.Player
             _characterController = GetComponent<CharacterController>();
             _cameraTransform = Camera.main.transform;
             
+            // Find InputManager in the scene
+            _inputManager = FindObjectOfType<InputManager>();
+            if (_inputManager != null)
+            {
+                // Subscribe to input events
+                _inputManager.OnLeftJoystickMoved += HandleMoveInput;
+                _inputManager.OnRightJoystickMoved += HandleTurnInput;
+            }
+            
             // Initialize comfort settings
             UpdateComfortSettings();
         }
         
+        private void OnDestroy()
+        {
+            // Unsubscribe from input events
+            if (_inputManager != null)
+            {
+                _inputManager.OnLeftJoystickMoved -= HandleMoveInput;
+                _inputManager.OnRightJoystickMoved -= HandleTurnInput;
+            }
+        }
+        
+        /// <summary>
+        /// Handle player movement input from VR controllers
+        /// </summary>
+        /// <param name="moveInput">Movement input vector</param>
+        private void HandleMoveInput(Vector2 moveInput)
+        {
+            _moveInput = moveInput;
+        }
+        
+        /// <summary>
+        /// Handle player turning input from VR controllers
+        /// </summary>
+        /// <param name="turnInput">Turning input vector</param>
+        private void HandleTurnInput(Vector2 turnInput)
+        {
+            _turnInput = turnInput;
+        }
+        
         private void Update()
         {
+            // Update snap turn cooldown timer
+            if (_snapTurnCooldown)
+            {
+                _snapTurnTimer -= Time.deltaTime;
+                if (_snapTurnTimer <= 0)
+                {
+                    _snapTurnCooldown = false;
+                }
+            }
+            
             HandleMovement();
             HandleTurning();
             UpdateTunnelVision();
@@ -64,21 +117,14 @@ namespace PacMan.Player
         /// </summary>
         private void HandleMovement()
         {
-            // Get movement input from XR controller
-            Vector2 moveInput = Vector2.zero;
-            
-            if (leftController != null)
-            {
-                leftController.inputDevice.TryGetFeatureValue(UnityEngine.XR.CommonUsages.primary2DAxis, out moveInput);
-            }
-            
+            // Use the move input from InputManager
             // Check if player is moving
-            _isMoving = moveInput.magnitude > 0.1f;
+            _isMoving = _moveInput.magnitude > 0.1f;
             
             if (_isMoving)
             {
                 // Convert input to world space movement
-                Vector3 move = new Vector3(moveInput.x, 0, moveInput.y);
+                Vector3 move = new Vector3(_moveInput.x, 0, _moveInput.y);
                 move = transform.TransformDirection(move);
                 move.y = 0f;
                 move.Normalize();
@@ -123,21 +169,29 @@ namespace PacMan.Player
         /// </summary>
         private void HandleSnapTurn()
         {
-            // Get turn input from XR controller
-            float turnInput = 0f;
-            
-            if (rightController != null)
+            // Update snap turn cooldown timer
+            if (_snapTurnCooldown)
             {
-                rightController.inputDevice.TryGetFeatureValue(UnityEngine.XR.CommonUsages.primary2DAxis, out Vector2 axis);
-                turnInput = axis.x;
+                _snapTurnTimer -= Time.deltaTime;
+                if (_snapTurnTimer <= 0)
+                {
+                    _snapTurnCooldown = false;
+                }
             }
             
-            // Check for snap turn input
-            if (Mathf.Abs(turnInput) > 0.5f)
+            // Use the turn input from InputManager
+            float turnInput = _turnInput.x;
+            
+            // Check for snap turn input and cooldown
+            if (Mathf.Abs(turnInput) > 0.5f && !_snapTurnCooldown)
             {
                 float angle = turnInput > 0 ? snapTurnAngle : -snapTurnAngle;
                 transform.Rotate(Vector3.up, angle);
                 OnSnapTurn?.Invoke(angle);
+                
+                // Set cooldown to prevent continuous turning
+                _snapTurnCooldown = true;
+                _snapTurnTimer = _snapTurnCooldownTime;
             }
         }
         
@@ -146,14 +200,8 @@ namespace PacMan.Player
         /// </summary>
         private void HandleSmoothTurn()
         {
-            // Get turn input from XR controller
-            float turnInput = 0f;
-            
-            if (rightController != null)
-            {
-                rightController.inputDevice.TryGetFeatureValue(UnityEngine.XR.CommonUsages.primary2DAxis, out Vector2 axis);
-                turnInput = axis.x;
-            }
+            // Use the turn input from InputManager
+            float turnInput = _turnInput.x;
             
             // Apply smooth turning
             transform.Rotate(Vector3.up, turnInput * smoothTurnSpeed * Time.deltaTime);

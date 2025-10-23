@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
+using PacMan.GameSystem;
 
 namespace PacMan.Player
 {
@@ -25,6 +26,8 @@ namespace PacMan.Player
         private Vector3 _teleportPosition;
         private Quaternion _teleportRotation;
         private CharacterController _characterController;
+        private InputManager _inputManager;
+        private bool _teleportButtonPressed = false;
         
         // Events
         public System.Action OnTeleportStarted;
@@ -33,6 +36,14 @@ namespace PacMan.Player
         private void Start()
         {
             _characterController = GetComponent<CharacterController>();
+            
+            // Find InputManager in the scene
+            _inputManager = FindObjectOfType<InputManager>();
+            if (_inputManager != null)
+            {
+                // Subscribe to input events
+                _inputManager.OnRightJoystickMoved += HandleTeleportInput;
+            }
             
             if (rayInteractor != null)
             {
@@ -45,20 +56,35 @@ namespace PacMan.Player
             }
         }
         
+        private void OnDestroy()
+        {
+            // Unsubscribe from input events
+            if (_inputManager != null)
+            {
+                _inputManager.OnRightJoystickMoved -= HandleTeleportInput;
+            }
+        }
+        
         private void Update()
         {
-            if (teleportController != null && rayInteractor != null)
+            if (teleportController != null && rayInteractor != null && _teleportButtonPressed)
             {
-                // Check for teleport activation (typically thumbstick pressed)
-                if (teleportController.inputDevice.IsPressed(InputHelpers.Button.Primary2DAxisTouch))
-                {
-                    UpdateTeleportIndicator();
-                }
-                else
-                {
-                    HideTeleportIndicator();
-                }
+                UpdateTeleportIndicator();
             }
+            else
+            {
+                HideTeleportIndicator();
+            }
+        }
+        
+        /// <summary>
+        /// Handle teleport input from VR controllers
+        /// </summary>
+        /// <param name="joystickInput">Joystick input vector</param>
+        private void HandleTeleportInput(Vector2 joystickInput)
+        {
+            // Check if joystick is pressed down (magnitude close to 1)
+            _teleportButtonPressed = joystickInput.magnitude > 0.9f;
         }
         
         /// <summary>
@@ -149,7 +175,7 @@ namespace PacMan.Player
         /// <param name="args">Selection event args</param>
         private void OnRaySelectEntered(SelectEnterEventArgs args)
         {
-            if (teleportController.inputDevice.IsPressed(InputHelpers.Button.Primary2DAxisTouch))
+            if (_teleportButtonPressed)
             {
                 if (rayInteractor.TryGetCurrent3DRaycastHit(out RaycastHit hit))
                 {
